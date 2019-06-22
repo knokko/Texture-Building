@@ -30,7 +30,7 @@ import nl.knokko.texture.color.Color;
 import nl.knokko.texture.color.SimpleRGBAColor;
 import nl.knokko.texture.color.SimpleRGBColor;
 
-public class ByteArrayTextureBuilder {
+public class ByteArrayTextureBuilder extends TextureBuilder {
 
 	public static Color getDifColor(Random random, Color basic, float maxDifference) {
 		return getMultipliedColor(basic, 1 - maxDifference + random.nextFloat() * maxDifference * 2);
@@ -42,200 +42,52 @@ public class ByteArrayTextureBuilder {
 		else
 			return SimpleRGBAColor.fromFloats(basic.getRedF() * factor, basic.getGreenF() * factor, basic.getBlueF() * factor, basic.getAlphaF());
 	}
-
-	private byte[] data;
-
-	private int width;
-	private int height;
-
-	private boolean useAlpha;
+	
+	private final byte[] data;
 
 	public ByteArrayTextureBuilder(int width, int height, boolean useAlpha) {
+		super(width, height, useAlpha);
 		data = new byte[width * height * (useAlpha ? 4 : 3)];
-		this.width = width;
-		this.height = height;
-		this.useAlpha = useAlpha;
 	}
-
+	
+	@Override
 	public void setPixel(int x, int y, byte red, byte green, byte blue, byte alpha) {
-		int index = (y * width + x) * (useAlpha ? 4 : 3);
+		int index = (y * width + x) * (hasAlpha ? 4 : 3);
 		data[index] = red;
 		data[index + 1] = green;
 		data[index + 2] = blue;
-		if (useAlpha)
+		if (hasAlpha)
 			data[index + 3] = alpha;
 	}
-
-	public void setPixel(int x, int y, byte red, byte green, byte blue) {
-		setPixel(x, y, red, green, blue, (byte) 0);
+	
+	@Override
+	public byte getRed(int x, int y) {
+		return data[(y * width + x) * (hasAlpha ? 4 : 3)];
 	}
-
-	public void setPixel(int x, int y, Color color) {
-		setPixel(x, y, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+	
+	@Override
+	public byte getGreen(int x, int y) {
+		return data[(y * width + x) * (hasAlpha ? 4 : 3) + 1];
 	}
-
+	
+	@Override
+	public byte getBlue(int x, int y) {
+		return data[(y * width + x) * (hasAlpha ? 4 : 3) + 2];
+	}
+	
+	@Override
+	public byte getAlpha(int x, int y) {
+		if (hasAlpha)
+			return data[(y * width + x) * (hasAlpha ? 4 : 3) + 3];
+		else
+			return (byte) 255;
+	}
+	
+	@Override
 	public Color getPixel(int x, int y) {
-		int index = (y * width + x) * (useAlpha ? 4 : 3);
-		return useAlpha ? SimpleRGBAColor.fromBytes(data[index], data[index + 1], data[index + 2], data[index + 3])
+		int index = (y * width + x) * (hasAlpha ? 4 : 3);
+		return hasAlpha ? SimpleRGBAColor.fromBytes(data[index], data[index + 1], data[index + 2], data[index + 3])
 				: SimpleRGBColor.fromBytes(data[index], data[index + 1], data[index + 2]);
-	}
-
-	public void drawHorizontalLine(int minX, int maxX, int y, byte red, byte green, byte blue, byte alpha) {
-		for (int x = minX; x <= maxX; x++)
-			setPixel(x, y, red, green, blue, alpha);
-	}
-
-	public void drawHorizontalLine(int minX, int maxX, int y, Color color) {
-		drawHorizontalLine(minX, maxX, y, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	public void drawVerticalLine(int minY, int maxY, int x, byte red, byte green, byte blue, byte alpha) {
-		for (int y = minY; y <= maxY; y++)
-			setPixel(x, y, red, green, blue, alpha);
-	}
-
-	public void drawVerticalLine(int minY, int maxY, int x, Color color) {
-		drawVerticalLine(minY, maxY, x, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	public void drawLine(int startX, int startY, int endX, int endY, Color color) {
-
-		// This case can be dealt with quicker than the usual case
-		if (startX == endX) {
-			if (endY > startY) {
-				drawVerticalLine(startY, endY, startX, color);
-			} else {
-				drawVerticalLine(endY, startY, startX, color);
-			}
-		}
-
-		// Same for this case
-		if (startY == endY) {
-			if (endX > startX) {
-				drawHorizontalLine(startX, endX, startY, color);
-			} else {
-				drawHorizontalLine(endX, startX, startY, color);
-			}
-		}
-
-		int minX, maxX;
-		if (endX > startX) {
-			minX = startX;
-			maxX = endX;
-		} else {
-			minX = endX;
-			maxX = startX;
-		}
-
-		int minY, maxY;
-		if (endY > startY) {
-			minY = startY;
-			maxY = endY;
-		} else {
-			minY = endY;
-			maxY = startY;
-		}
-		int distanceX = maxX - minX;
-		int distanceY = maxY - minY;
-
-		// We use two cases so that no points get skipped in case of a large slope
-		if (distanceX >= distanceY) {
-
-			/*
-			 * Make use of the formula y = ax + b
-			 * 
-			 * Use a = (endY - startY) / (endX - startX)
-			 * 
-			 * Then it must hold that a*startX + b = startY so b = startY - a*startX
-			 */
-			double a = (double) (endY - startY) / (endX - startX);
-			double b = startY - a * startX;
-
-			// Don't go outside texture bounds
-			if (minX < 0)
-				minX = 0;
-			if (maxX >= width)
-				maxX = width - 1;
-
-			// Now just loop over all x's
-			for (int x = minX; x <= maxX; x++) {
-				double y = a * x + b;
-
-				// TODO anti-aliasing?
-				// int lowY = (int) y;
-				// int highY = lowY + 1;
-				
-				int roundedY = (int) (y + 0.5);
-				if (roundedY >= 0 && roundedY < height)
-					setPixel(x, roundedY, color);
-			}
-		} else {
-
-			/*
-			 * Make use of the formula x = ay + b
-			 * 
-			 * Use a = (endX - startX) / (endY - startY)
-			 * 
-			 * Then it must hold that a*startY + b = startX so b = startX - a*startY
-			 */
-
-			double a = (double) (endX - startX) / (endY - startY);
-			double b = startX - a * startY;
-
-			// Don't go outside texture bounds
-			if (minY < 0)
-				minY = 0;
-			if (maxY >= height)
-				maxY = height - 1;
-
-			// Now just loop over all y's
-			for (int y = minY; y <= maxY; y++) {
-				double x = a * y + b;
-				int roundedX = (int) (x + 0.5);
-				
-				// Don't go outside texture bounds
-				if (roundedX >= 0 && roundedX < width)
-					setPixel(roundedX, y, color);
-			}
-		}
-	}
-
-	public void fillRect(int minX, int minY, int maxX, int maxY, byte red, byte green, byte blue, byte alpha) {
-		for (int x = minX; x <= maxX; x++)
-			for (int y = minY; y <= maxY; y++)
-				setPixel(x, y, red, green, blue, alpha);
-	}
-
-	public void fillRect(int minX, int minY, int maxX, int maxY, Color color) {
-		fillRect(minX, minY, maxX, maxY, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	public void fillCircle(int centreX, int centreY, double radius, Color color) {
-		int minX = Math.max((int) (centreX - radius), 0);
-		int minY = Math.max((int) (centreY - radius), 0);
-		int maxX = Math.min((int) (centreX + radius + 1), width - 1);
-		int maxY = Math.min((int) (centreY + radius + 1), height - 1);
-		for (int x = minX; x <= maxX; x++) {
-			for (int y = minY; y <= maxY; y++) {
-				double distance = Math.hypot(x - centreX, y - centreY);
-				if (distance <= radius)
-					setPixel(x, y, color);
-			}
-		}
-	}
-
-	public void fillOval(int centreX, int centreY, double radiusX, double radiusY, Color color) {
-		int minX = (int) (centreX - radiusX);
-		int minY = (int) (centreY - radiusY);
-		int maxX = (int) (centreX + radiusX + 1);
-		int maxY = (int) (centreY + radiusY + 1);
-		for (int x = minX; x <= maxX; x++) {
-			for (int y = minY; y <= maxY; y++) {
-				double distance = Math.hypot((x - centreX) / radiusX, (y - centreY) / radiusY);
-				if (distance <= 1)
-					setPixel(x, y, color);
-			}
-		}
 	}
 
 	public void fillAverage(int minX, int minY, int maxX, int maxY, Color color, float maxDifference, Random random) {
@@ -295,15 +147,15 @@ public class ByteArrayTextureBuilder {
 			while (shift > plankLength)
 				shift -= plankLength;
 		}
-		drawHorizontalLine(minX, maxX, minY, edgeColor);
-		drawHorizontalLine(minX, maxX, maxY, edgeColor);
-		drawVerticalLine(minY, maxY, minX, edgeColor);
-		drawVerticalLine(minY, maxY, maxX, edgeColor);
+		geometry.drawHorizontalLine(minX, maxX, minY, edgeColor);
+		geometry.drawHorizontalLine(minX, maxX, maxY, edgeColor);
+		geometry.drawVerticalLine(minY, maxY, minX, edgeColor);
+		geometry.drawVerticalLine(minY, maxY, maxX, edgeColor);
 	}
 
 	public void fillWoodPattern(int minX, int minY, int maxX, int maxY, Color averageColor, Random random) {
 		Color color = getDifColor(random, averageColor, 0.3f);
-		fillRect(minX, minY, maxX, maxY, color);
+		geometry.fillRect(minX, minY, maxX, maxY, color);
 		for (int i = 0; i < 10; i++) {
 			Color lineColor = getDifColor(random, color, 0.3f);
 			int y = minY + random.nextInt(maxY - minY + 1);
@@ -344,12 +196,12 @@ public class ByteArrayTextureBuilder {
 		}
 
 		// Again, don't go over the bounds
-		if (maxX >= width()) {
-			maxX = width() - 1;
+		if (maxX >= width) {
+			maxX = width - 1;
 		}
 
-		if (maxY >= height()) {
-			maxY = height() - 1;
+		if (maxY >= height) {
+			maxY = height - 1;
 		}
 
 		// Now the actual work
@@ -397,29 +249,18 @@ public class ByteArrayTextureBuilder {
 
 	public void addDecayingCirclePattern(Color color, float maxColorDifference, double minRadius, double maxRadius,
 			float density, Random random) {
-		addDecayingCirclePattern(0, 0, width() - 1, height() - 1, color, maxColorDifference, minRadius, maxRadius,
+		addDecayingCirclePattern(0, 0, width - 1, height - 1, color, maxColorDifference, minRadius, maxRadius,
 				density, random);
 	}
-
-	public int width() {
-		return width;
-	}
-
-	public int height() {
-		return height;
-	}
-
-	public boolean useAlpha() {
-		return useAlpha;
-	}
-
+	
+	@Override
 	public BufferedImage createBufferedImage() {
 		BufferedImage image = new BufferedImage(width, height,
-				useAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+				hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				int dataIndex = (useAlpha ? 4 : 3) * (y * width + x);
-				int alpha = useAlpha ? data[dataIndex + 3] : 255;
+				int dataIndex = (hasAlpha ? 4 : 3) * (y * width + x);
+				int alpha = hasAlpha ? data[dataIndex + 3] : 255;
 				image.setRGB(x, y,((alpha & 0xFF) << 24) |
 		                ((data[dataIndex] & 0xFF) << 16) |
 		                ((data[dataIndex + 1] & 0xFF) << 8)  |

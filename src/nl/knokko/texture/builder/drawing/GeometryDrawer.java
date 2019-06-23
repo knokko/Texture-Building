@@ -2,24 +2,94 @@ package nl.knokko.texture.builder.drawing;
 
 import nl.knokko.texture.builder.TextureBuilder;
 import nl.knokko.texture.color.Color;
+import nl.knokko.texture.color.SimpleRGBAColor;
 
+/**
+ * Instances of this class can be used to draw simple geometrical shapes on texture builders.
+ * It should be available on all implementations of TextureBuilder and can be accessed by calling
+ * the geometry() method of the texture builder to draw on.
+ * @author knokko
+ *
+ */
 public class GeometryDrawer {
 	
 	protected final TextureBuilder texture;
 	
 	protected final int width, height;
 	
+	/**
+	 * Constructs a new GeometryDrawer. Only one instance of GeometryDrawer should be created per instance
+	 * of TextureBuilder (preferable within the constructor of the TextureBuilder). It can then be accessed
+	 * by calling the geometry() method of the corresponding texture builder.
+	 * @param texture The texture builder that this GeometryDrawer should draw on
+	 */
 	public GeometryDrawer(TextureBuilder texture) {
 		this.texture = texture;
 		this.width = texture.width();
 		this.height = texture.height();
 	}
 	
+	/**
+	 * Draws a horizontal line between the points (minX,y) and (maxX,y) with the given color.
+	 * @param minX The minimum x-coordinate where the line should be drawn (should be smaller than maxX)
+	 * @param maxX The maximum x-coordinate, where the line should be drawn (should be larger than minX)
+	 * @param y The y-coordinate of all points on the line to draw
+	 * @param red The red component of the color (the value in range 0 to 255 casted down to byte)
+	 * @param green The green component of the color (the value in range 0 to 255 casted down to byte)
+	 * @param blue The blue component of the color (the value in range 0 to 255 casted down to byte)
+	 * @param alpha The alpha component of the color (the value in range 0 to 255 casted down to byte)
+	 */
 	public void drawHorizontalLine(int minX, int maxX, int y, byte red, byte green, byte blue, byte alpha) {
-		for (int x = minX; x <= maxX; x++)
-			texture.setPixel(x, y, red, green, blue, alpha);
+		
+		// Prevent division by 0
+		if (alpha == 0)
+			return;
+		
+		// If the color is not transparent, do it the quick and easy way
+		if (alpha == -1) {
+			for (int x = minX; x <= maxX; x++)
+				texture.setPixel(x, y, red, green, blue, alpha);
+		} else {
+			
+			// The color is transparent, so do it the hard way...
+			float lineFactor = (alpha & 0xFF) / 255f;
+			
+			float lineRed = (red & 0xFF) * lineFactor / 255f;
+			float lineGreen = (green & 0xFF) * lineFactor / 255f;
+			float lineBlue = (blue & 0xFF) * lineFactor / 255f;
+			
+			for (int x = minX; x <= maxX; x++) {
+				Color oldColor = texture.getPixel(x, y);
+				
+				// Let's hope its the easy way
+				if (oldColor.getAlpha() == 0) {
+					texture.setPixel(x, y, red, green, blue, alpha);
+				} else {
+					
+					// Or do it the hard way...
+					texture.setPixel(x, y, mixColors(lineFactor, lineRed, lineGreen, lineBlue, texture.getPixel(x, y)));
+				}
+			}
+		}
 	}
 	
+	private Color mixColors(float lineFactor, float lineRed, float lineGreen, float lineBlue, Color old) {
+		float oldFactor = old.getAlphaF();
+		float factorSum = lineFactor + oldFactor;
+		float finalFactor = 1f / factorSum;
+		return SimpleRGBAColor.fromFloats(
+				(lineRed + old.getRedF() * oldFactor) * finalFactor, 
+				(lineGreen + old.getGreenF() * oldFactor) * finalFactor, 
+				(lineBlue + old.getBlueF() * oldFactor) * finalFactor, factorSum);
+	}
+	
+	/**
+	 * Draws a horizontal line between the points (minX,y) and (maxX,y) with the given color.
+	 * @param minX The minimum x-coordinate where the line should be drawn (should be smaller than maxX)
+	 * @param maxX The maximum x-coordinate, where the line should be drawn (should be larger than minX)
+	 * @param y The y-coordinate of all points on the line to draw
+	 * @param color The color of the line to draw
+	 */
 	public void drawHorizontalLine(int minX, int maxX, int y, Color color) {
 		drawHorizontalLine(minX, maxX, y, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}

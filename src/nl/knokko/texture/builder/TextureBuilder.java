@@ -1,6 +1,10 @@
 package nl.knokko.texture.builder;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import nl.knokko.texture.builder.drawing.GeometryDrawer;
 import nl.knokko.texture.color.Color;
@@ -39,4 +43,12 @@ public interface TextureBuilder {
 	}
 	
 	BufferedImage createBufferedImage();
+	
+	default void saveTestImage(String name) {
+		try {
+			ImageIO.write(createBufferedImage(), "PNG", new File(name + ".png"));
+		} catch (IOException ioex) {
+			throw new RuntimeException(ioex);
+		}
+	}
 }

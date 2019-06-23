@@ -7,8 +7,12 @@ public class GeometryDrawer {
 	
 	protected final TextureBuilder texture;
 	
+	protected final int width, height;
+	
 	public GeometryDrawer(TextureBuilder texture) {
 		this.texture = texture;
+		this.width = texture.width();
+		this.height = texture.height();
 	}
 	
 	public void drawHorizontalLine(int minX, int maxX, int y, byte red, byte green, byte blue, byte alpha) {
@@ -85,8 +89,8 @@ public class GeometryDrawer {
 			// Don't go outside texture bounds
 			if (minX < 0)
 				minX = 0;
-			if (maxX >= texture.width)
-				maxX = texture.width - 1;
+			if (maxX >= width)
+				maxX = width - 1;
 
 			// Now just loop over all x's
 			for (int x = minX; x <= maxX; x++) {
@@ -97,7 +101,7 @@ public class GeometryDrawer {
 				// int highY = lowY + 1;
 				
 				int roundedY = (int) (y + 0.5);
-				if (roundedY >= 0 && roundedY < texture.height)
+				if (roundedY >= 0 && roundedY < height)
 					texture.setPixel(x, roundedY, color);
 			}
 		} else {
@@ -116,8 +120,8 @@ public class GeometryDrawer {
 			// Don't go outside texture bounds
 			if (minY < 0)
 				minY = 0;
-			if (maxY >= texture.height)
-				maxY = texture.height - 1;
+			if (maxY >= height)
+				maxY = height - 1;
 
 			// Now just loop over all y's
 			for (int y = minY; y <= maxY; y++) {
@@ -127,7 +131,7 @@ public class GeometryDrawer {
 				// TODO anti-aliasing?
 				
 				// Don't go outside texture bounds
-				if (roundedX >= 0 && roundedX < texture.width)
+				if (roundedX >= 0 && roundedX < width)
 					texture.setPixel(roundedX, y, color);
 			}
 		}
@@ -146,8 +150,8 @@ public class GeometryDrawer {
 	public void fillCircle(int centreX, int centreY, double radius, Color color) {
 		int minX = Math.max((int) (centreX - radius), 0);
 		int minY = Math.max((int) (centreY - radius), 0);
-		int maxX = Math.min((int) (centreX + radius + 1), texture.width - 1);
-		int maxY = Math.min((int) (centreY + radius + 1), texture.height - 1);
+		int maxX = Math.min((int) (centreX + radius + 1), width - 1);
+		int maxY = Math.min((int) (centreY + radius + 1), height - 1);
 		for (int x = minX; x <= maxX; x++) {
 			for (int y = minY; y <= maxY; y++) {
 				double distance = Math.hypot(x - centreX, y - centreY);

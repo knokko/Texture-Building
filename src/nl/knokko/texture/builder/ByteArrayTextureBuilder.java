@@ -26,11 +26,12 @@ package nl.knokko.texture.builder;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import nl.knokko.texture.builder.drawing.GeometryDrawer;
 import nl.knokko.texture.color.Color;
 import nl.knokko.texture.color.SimpleRGBAColor;
 import nl.knokko.texture.color.SimpleRGBColor;
 
-public class ByteArrayTextureBuilder extends TextureBuilder {
+public class ByteArrayTextureBuilder implements TextureBuilder {
 
 	public static Color getDifColor(Random random, Color basic, float maxDifference) {
 		return getMultipliedColor(basic, 1 - maxDifference + random.nextFloat() * maxDifference * 2);
@@ -44,10 +45,40 @@ public class ByteArrayTextureBuilder extends TextureBuilder {
 	}
 	
 	private final byte[] data;
+	
+	private final int width, height;
+	private final boolean hasAlpha;
+	
+	private final GeometryDrawer geometry;
 
 	public ByteArrayTextureBuilder(int width, int height, boolean useAlpha) {
-		super(width, height, useAlpha);
+		this.width = width;
+		this.height = height;
+		this.hasAlpha = useAlpha;
+		
 		data = new byte[width * height * (useAlpha ? 4 : 3)];
+		
+		geometry = new GeometryDrawer(this);
+	}
+	
+	@Override
+	public int width() {
+		return width;
+	}
+	
+	@Override
+	public int height() {
+		return height;
+	}
+	
+	@Override
+	public boolean useAlpha() {
+		return hasAlpha;
+	}
+	
+	@Override
+	public GeometryDrawer geometry() {
+		return geometry;
 	}
 	
 	@Override

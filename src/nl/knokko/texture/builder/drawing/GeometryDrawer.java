@@ -217,16 +217,39 @@ public class GeometryDrawer {
 		fillRect(minX, minY, maxX, maxY, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}
 
-	public void fillCircle(int centreX, int centreY, double radius, Color color) {
-		int minX = Math.max((int) (centreX - radius), 0);
-		int minY = Math.max((int) (centreY - radius), 0);
-		int maxX = Math.min((int) (centreX + radius + 1), width - 1);
-		int maxY = Math.min((int) (centreY + radius + 1), height - 1);
+	public void fillCircle(double centerX, double centerY, double radius, Color color) {
+		int minX = Math.max((int) Math.floor(centerX - radius), 0);
+		int maxX = Math.min((int) Math.floor(centerX + radius), width - 1);
+		double radiusSQ = radius * radius;
 		for (int x = minX; x <= maxX; x++) {
-			for (int y = minY; y <= maxY; y++) {
-				double distance = Math.hypot(x - centreX, y - centreY);
-				if (distance <= radius)
-					texture.setPixel(x, y, color);
+			
+			/*
+			 * Use (x + 0.5 - centerX)^2 + (y + 0.5 - centerY)^2 <= radius^2
+			 * so (y + 0.5 - centerY)^2 <= radius^2 - (x + 0.5 - centerX)^2
+			 * so |y + 0.5 - centerY| <= sqrt(radius^2 - (x + 0.5 - centerX)^2)
+			 * so if y >= centerY - 0.5: y + 0.5 - centerY <= sqrt(...) thus y <= centerY + sqrt(...) - 0.5
+			 * so if y <= centerY - 0.5: -y + centerY <= sqrt(...) thus y >= centerY - sqrt(...) - 0.5
+			 */
+			double dx = x + 0.5 - centerX;
+			double maxDistSqY = radiusSQ - dx * dx;
+			double maxDistY = Math.sqrt(maxDistSqY);
+			
+			double minYD = centerY - maxDistY - 0.5;
+			double minYDF = Math.floor(minYD);
+			int minY = (int) minYDF;
+			texture.setPixel(x, minY, mixColors((float) (1 - (minYD - minYDF)), color.getRedF(), color.getGreenF(), color.getBlueF(), texture.getPixel(x, minY)));
+			
+			double maxYD = centerY + maxDistY - 0.5;
+			double maxYDF = Math.floor(maxYD);
+			
+			// TODO Finetune this someday
+			int maxY = (int) maxYDF;
+			if (maxY != minY) {
+				texture.setPixel(x, maxY, mixColors((float) (1 - (maxYD - maxYDF)), color.getRedF(), color.getGreenF(), color.getBlueF(), texture.getPixel(x, maxY)));
+			
+				if (maxY > minY + 1) {
+					drawVerticalLine(minY + 1, maxY - 1, x, color);
+				}
 			}
 		}
 	}

@@ -47,6 +47,25 @@ public class BasicTextureTester {
 		assert texture.getGreen(15, 15) == 50;
 		assert texture.getBlue(10, 15) == (byte) 230;
 		
+		texture.geometry().drawVerticalLine(10, 20, 15, SimpleRGBColor.fromInts(200, 50, 230));
+		assert texture.getRed(15, 10) == (byte) 200;
+		assert texture.getGreen(15, 15) == 50;
+		assert texture.getBlue(15, 10) == (byte) 230;
+		
+		texture.geometry().drawLine(43, 65, 30, 23, SimpleRGBColor.fromInts(70, 80, 210));
+		assert texture.getRed(43, 65) == 70;
+		assert texture.getGreen(43, 65) == 80;
+		assert texture.getBlue(43, 65) == (byte) 210;
+		assert texture.getRed(30, 23) == 70;
+		assert texture.getGreen(30, 23) == 80;
+		assert texture.getBlue(30, 23) == (byte) 210;
+		
+		texture.geometry().fillCircle(80.5, 30.5, 10, SimpleRGBColor.fromInts(200, 150, 20));
+		assert texture.getRed(86, 36) == (byte) 200;
+		assert texture.getGreen(74, 24) == (byte) 150;
+		assert texture.getBlue(80, 30) == 20;
+		texture.setPixel(80, 30, (byte) 255, (byte) 0, (byte) 0);
+		
 		// Now the graphical test which needs to be done by hand
 		texture.saveTestImage("byteArray");
 	}

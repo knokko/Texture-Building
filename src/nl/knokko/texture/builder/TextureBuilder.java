@@ -6,8 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import nl.knokko.texture.builder.drawing.GeometryDrawer;
-import nl.knokko.texture.builder.drawing.MaterialDrawer;
+import nl.knokko.texture.builder.drawing.*;
 import nl.knokko.texture.color.Color;
 import nl.knokko.texture.color.SimpleRGBAColor;
 
@@ -22,6 +21,10 @@ public interface TextureBuilder {
 	GeometryDrawer geometry();
 	
 	MaterialDrawer materials();
+	
+	AverageDrawer average();
+	
+	DecayingDrawer decaying();
 	
 	void setPixel(int x, int y, byte red, byte green, byte blue, byte alpha);
 	

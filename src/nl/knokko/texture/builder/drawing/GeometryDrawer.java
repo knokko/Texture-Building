@@ -52,11 +52,11 @@ public class GeometryDrawer {
 		} else {
 			
 			// The color is transparent, so do it the hard way...
-			float lineFactor = (alpha & 0xFF) / 255f;
+			double lineFactor = (alpha & 0xFF) / 255.0;
 			
-			float lineRed = (red & 0xFF) * lineFactor / 255f;
-			float lineGreen = (green & 0xFF) * lineFactor / 255f;
-			float lineBlue = (blue & 0xFF) * lineFactor / 255f;
+			double lineRed = (red & 0xFF) * lineFactor / 255.0;
+			double lineGreen = (green & 0xFF) * lineFactor / 255.0;
+			double lineBlue = (blue & 0xFF) * lineFactor / 255.0;
 			
 			for (int x = minX; x <= maxX; x++) {
 				Color oldColor = texture.getPixel(x, y);
@@ -73,14 +73,14 @@ public class GeometryDrawer {
 		}
 	}
 	
-	private Color mixColors(float lineFactor, float lineRed, float lineGreen, float lineBlue, Color old) {
-		float oldFactor = old.getAlphaF();
-		float factorSum = lineFactor + oldFactor;
-		float finalFactor = 1f / factorSum;
-		return SimpleRGBAColor.fromFloats(
-				(lineRed + old.getRedF() * oldFactor) * finalFactor, 
-				(lineGreen + old.getGreenF() * oldFactor) * finalFactor, 
-				(lineBlue + old.getBlueF() * oldFactor) * finalFactor, factorSum);
+	private Color mixColors(double lineFactor, double lineRed, double lineGreen, double lineBlue, Color old) {
+		double oldFactor = old.getAlphaD();
+		double factorSum = lineFactor + oldFactor;
+		double finalFactor = 1f / factorSum;
+		return SimpleRGBAColor.fromDoubles(
+				(lineRed + old.getRedD() * oldFactor) * finalFactor, 
+				(lineGreen + old.getGreenD() * oldFactor) * finalFactor, 
+				(lineBlue + old.getBlueD() * oldFactor) * finalFactor, factorSum);
 	}
 	
 	/**
@@ -237,7 +237,7 @@ public class GeometryDrawer {
 			double minYD = centerY - maxDistY - 0.5;
 			double minYDF = Math.floor(minYD);
 			int minY = (int) minYDF;
-			texture.setPixel(x, minY, mixColors((float) (1 - (minYD - minYDF)), color.getRedF(), color.getGreenF(), color.getBlueF(), texture.getPixel(x, minY)));
+			texture.setPixel(x, minY, mixColors((float) (1 - (minYD - minYDF)), color.getRedD(), color.getGreenD(), color.getBlueD(), texture.getPixel(x, minY)));
 			
 			double maxYD = centerY + maxDistY - 0.5;
 			double maxYDF = Math.floor(maxYD);
@@ -245,7 +245,7 @@ public class GeometryDrawer {
 			// TODO Finetune this someday
 			int maxY = (int) maxYDF;
 			if (maxY != minY) {
-				texture.setPixel(x, maxY, mixColors((float) (1 - (maxYD - maxYDF)), color.getRedF(), color.getGreenF(), color.getBlueF(), texture.getPixel(x, maxY)));
+				texture.setPixel(x, maxY, mixColors((float) (1 - (maxYD - maxYDF)), color.getRedD(), color.getGreenD(), color.getBlueD(), texture.getPixel(x, maxY)));
 			
 				if (maxY > minY + 1) {
 					drawVerticalLine(minY + 1, maxY - 1, x, color);

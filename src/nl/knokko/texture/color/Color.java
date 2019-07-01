@@ -25,4 +25,12 @@ public interface Color {
 	float getBlueF();
 	
 	float getAlphaF();
+	
+	double getRedD();
+	
+	double getGreenD();
+	
+	double getBlueD();
+	
+	double getAlphaD();
 }

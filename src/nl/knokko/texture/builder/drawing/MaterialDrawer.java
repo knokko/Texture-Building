@@ -149,4 +149,68 @@ public class MaterialDrawer {
 		long endTime = System.currentTimeMillis();
 		System.out.println("Creating big grass texture took " + (endTime - startTime) + " ms");
 	}
+	
+	public void fillWoodPlanksPattern(int minX, int minY, int maxX, int maxY, int plankLength, int plankHeight,
+			int plankShift, Color plankColor, Color edgeColor, float maxDifference, Random random) {
+		
+		// TODO Recall why the next line was commented out
+		// fillWoodPattern(minX, minY, maxX, maxY, plankColor, random);
+		int shift = plankShift;
+		for (int y = minY; y <= maxY; y += plankHeight) {
+			while (shift > plankLength)
+				shift -= plankLength;
+			fillWoodPattern(minX, y, minX + shift, Math.min(y + plankHeight, maxY), plankColor, random);
+			for (int x = minX + shift; x <= maxX; x += plankLength)
+				fillWoodPattern(x, y, Math.min(x + plankLength, maxX), Math.min(y + plankHeight, maxY), plankColor,
+						random);
+			shift += plankShift;
+		}
+		shift = plankShift;
+		AverageDrawer average = texture.average();
+		for (int y = minY; y <= maxY; y += plankHeight) {
+			average.fillAverage(minX, y, maxX, y, edgeColor, maxDifference, random);
+			for (int x = minX + shift; x <= maxX; x += plankLength)
+				average.fillAverage(x, y, x, Math.min(y + plankHeight, maxY), edgeColor, maxDifference, random);
+			shift += plankShift;
+			while (shift > plankLength)
+				shift -= plankLength;
+		}
+		GeometryDrawer geometry = texture.geometry();
+		geometry.drawHorizontalLine(minX, maxX, minY, edgeColor);
+		geometry.drawHorizontalLine(minX, maxX, maxY, edgeColor);
+		geometry.drawVerticalLine(minY, maxY, minX, edgeColor);
+		geometry.drawVerticalLine(minY, maxY, maxX, edgeColor);
+	}
+
+	public void fillWoodPattern(int minX, int minY, int maxX, int maxY, Color averageColor, Random random) {
+		
+		// TODO Recall what the next line is for
+		Color color = AverageDrawer.getDifColor(random, averageColor, 0.3f);
+		texture.geometry().fillRect(minX, minY, maxX, maxY, color);
+		for (int i = 0; i < 10; i++) {
+			Color lineColor = AverageDrawer.getDifColor(random, color, 0.3f);
+			int y = minY + random.nextInt(maxY - minY + 1);
+			for (int x = minX; x <= maxX; x++) {
+				texture.setPixel(x, y, lineColor);
+				if (y < maxY && random.nextInt(4) == 0)
+					y++;
+				if (y > minY && random.nextInt(4) == 0)
+					y--;
+			}
+		}
+	}
+	
+	public void fillBrickPattern(int minX, int minY, int maxX, int maxY, int brickLength, int brickHeight,
+			Color brickColor, Color edgeColor, float maxDifference, Random random) {
+		AverageDrawer average = texture.average();
+		average.fillAverage(minX, minY, maxX, maxY, brickColor, maxDifference, random);
+		for (int y = minY; y <= maxY; y += brickHeight)
+			average.fillAverage(minX, y, maxX, y, edgeColor, maxDifference, random);
+		boolean flipper = false;
+		for (int y = minY; y <= maxY; y += brickHeight) {
+			for (int x = flipper ? minX : minX + brickLength / 2; x <= maxX; x += brickLength)
+				average.fillAverage(x, y, x, Math.min(y + brickHeight, maxY), edgeColor, maxDifference, random);
+			flipper = !flipper;
+		}
+	}
 }

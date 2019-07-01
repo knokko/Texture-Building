@@ -2,8 +2,12 @@ package nl.knokko.texture.color;
 
 public class SimpleRGBColor implements Color {
 	
-	public static SimpleRGBColor fromFloats(float red, float green, float blue) {
-		return fromInts((int) (red * 255f + 0.5f), (int) (green * 255f + 0.5f), (int) (blue * 255f + 0.5f));
+	//public static SimpleRGBColor fromFloats(float red, float green, float blue) {
+		//return fromInts((int) (red * 255f + 0.5f), (int) (green * 255f + 0.5f), (int) (blue * 255f + 0.5f));
+	//}
+	
+	public static SimpleRGBColor fromDoubles(double red, double green, double blue) {
+		return fromInts((int) (red * 255.0 + 0.5), (int) (green * 255.0 + 0.5), (int) (blue * 255.0 + 0.5));
 	}
 	
 	public static SimpleRGBColor fromInts(int red, int green, int blue) {
@@ -88,5 +92,25 @@ public class SimpleRGBColor implements Color {
 	@Override
 	public float getAlphaF() {
 		return 1f;
+	}
+	
+	@Override
+	public double getRedD() {
+		return (red & 0xFF) / 255.0;
+	}
+	
+	@Override
+	public double getGreenD() {
+		return (green & 0xFF) / 255.0;
+	}
+	
+	@Override
+	public double getBlueD() {
+		return (blue & 0xFF) / 255.0;
+	}
+	
+	@Override
+	public double getAlphaD() {
+		return 1.0;
 	}
 }

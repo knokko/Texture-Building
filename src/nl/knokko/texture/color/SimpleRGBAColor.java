@@ -7,6 +7,11 @@ public class SimpleRGBAColor extends SimpleRGBColor {
 				(int) (blue * 255f + 0.5f), (int) (alpha * 255f + 0.5f));
 	}
 	
+	public static SimpleRGBAColor fromDoubles(double red, double green, double blue, double alpha) {
+		return fromInts((int) (red * 255.0 + 0.5), (int) (green * 255.0 + 0.5), 
+				(int) (blue * 255.0 + 0.5), (int) (alpha * 255.0 + 0.5));
+	}
+	
 	public static SimpleRGBAColor fromInts(int red, int green, int blue, int alpha) {
 		return new SimpleRGBAColor((byte) clamp(red), (byte) clamp(green), (byte) clamp(blue), (byte) clamp(alpha));
 	}
@@ -35,5 +40,10 @@ public class SimpleRGBAColor extends SimpleRGBColor {
 	@Override
 	public float getAlphaF() {
 		return (alpha & 0xFF) / 255f;
+	}
+	
+	@Override
+	public double getAlphaD() {
+		return (alpha & 0xFF) / 255.0;
 	}
 }

@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import nl.knokko.texture.builder.drawing.GeometryDrawer;
+import nl.knokko.texture.builder.drawing.MaterialDrawer;
 import nl.knokko.texture.color.Color;
 import nl.knokko.texture.color.SimpleRGBAColor;
 import nl.knokko.texture.color.SimpleRGBColor;
@@ -50,6 +51,7 @@ public class ByteArrayTextureBuilder implements TextureBuilder {
 	private final boolean hasAlpha;
 	
 	private final GeometryDrawer geometry;
+	private final MaterialDrawer materials;
 
 	public ByteArrayTextureBuilder(int width, int height, boolean useAlpha) {
 		this.width = width;
@@ -59,6 +61,7 @@ public class ByteArrayTextureBuilder implements TextureBuilder {
 		data = new byte[width * height * (useAlpha ? 4 : 3)];
 		
 		geometry = new GeometryDrawer(this);
+		materials = new MaterialDrawer(this);
 	}
 	
 	@Override
@@ -79,6 +82,11 @@ public class ByteArrayTextureBuilder implements TextureBuilder {
 	@Override
 	public GeometryDrawer geometry() {
 		return geometry;
+	}
+	
+	@Override
+	public MaterialDrawer materials() {
+		return materials;
 	}
 	
 	@Override

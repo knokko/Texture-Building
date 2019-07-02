@@ -24,21 +24,22 @@
 package nl.knokko.texture.builder;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import nl.knokko.texture.builder.drawing.*;
 import nl.knokko.texture.color.*;
 
 public class ByteArrayTextureBuilder implements TextureBuilder {
 
-	private final byte[] data;
+	protected final byte[] data;
 	
-	private final int width, height;
-	private final boolean hasAlpha;
+	protected final int width, height;
+	protected final boolean hasAlpha;
 	
-	private final GeometryDrawer geometry;
-	private final MaterialDrawer materials;
-	private final AverageDrawer average;
-	private final DecayingDrawer decaying;
+	protected final GeometryDrawer geometry;
+	protected final MaterialDrawer materials;
+	protected final AverageDrawer average;
+	protected final DecayingDrawer decaying;
 
 	public ByteArrayTextureBuilder(int width, int height, boolean useAlpha) {
 		this.width = width;
@@ -143,5 +144,10 @@ public class ByteArrayTextureBuilder implements TextureBuilder {
 			}
 		}
 		return image;
+	}
+
+	@Override
+	public byte[] createArrrayRGBA() {
+		return Arrays.copyOf(data, data.length);
 	}
 }

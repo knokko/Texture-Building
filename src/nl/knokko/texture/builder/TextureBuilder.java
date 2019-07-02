@@ -50,6 +50,8 @@ public interface TextureBuilder {
 	
 	BufferedImage createBufferedImage();
 	
+	byte[] createArrrayRGBA();
+	
 	default void saveTestImage(String name) {
 		try {
 			ImageIO.write(createBufferedImage(), "PNG", new File(name + ".png"));
